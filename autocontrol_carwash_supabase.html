@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AutoControl | Gestión diaria de car wash</title>
+<style>
+:root{--bg:#0b1017;--panel:#121b26;--panel2:#172332;--line:#263547;--text:#f3f6fa;--muted:#9aaabd;--accent:#61d6b3;--accent2:#a6f0dc;--red:#ff8c8c;--yellow:#ffd37a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#172a3b 0,#0b1017 55%);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+.wrap{max-width:1180px;margin:auto;padding:24px 16px 48px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:46px;height:46px;border-radius:14px;background:var(--accent);color:#092018;display:grid;place-items:center;font-size:24px;font-weight:900}.eyebrow{color:var(--accent);text-transform:uppercase;letter-spacing:.13em;font-size:11px;font-weight:800}.brand h1{margin:3px 0 0;font-size:24px;letter-spacing:-.04em}.datebox{border:1px solid var(--line);border-radius:12px;padding:10px 13px;background:#111a24;color:var(--muted);font-size:13px}
+h2{font-size:17px;margin:0 0 14px}.sub{color:var(--muted);font-size:13px;margin-top:-7px;margin-bottom:16px;line-height:1.5}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}.stat,.card{background:linear-gradient(145deg,rgba(23,35,50,.96),rgba(15,24,35,.96));border:1px solid var(--line);border-radius:17px;padding:17px;min-width:0}.stat .label{font-size:12px;color:var(--muted)}.stat .value{font-size:clamp(21px,3vw,29px);font-weight:800;letter-spacing:-.04em;margin-top:8px}.stat .hint{font-size:11px;color:var(--muted);margin-top:7px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}.fieldgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}label{font-size:12px;color:var(--muted)}input,select,textarea{width:100%;border:1px solid #33465b;background:#0d151e;color:var(--text);border-radius:10px;padding:11px 12px;font:inherit;font-size:14px;outline:none}input:focus,select:focus{border-color:var(--accent)}button{border:0;border-radius:10px;padding:11px 14px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:.15s}button:hover{transform:translateY(-1px)}.primary{background:var(--accent);color:#092018}.secondary{background:#263749;color:var(--text);border:1px solid #35495f}.danger{background:#3b2228;color:#ffc1c1;border:1px solid #66353e}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.fullbtn{width:100%;margin-top:12px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.tab{background:#121c28;color:var(--muted);border:1px solid var(--line)}.tab.active{background:var(--accent);color:#092018;border-color:var(--accent)}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}.toolbar .left{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.toolbar input{width:auto;min-width:150px}.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:650px;background:#0f1822}th,td{text-align:left;padding:12px 13px;border-bottom:1px solid #233142;font-size:13px}th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;background:#141f2b}tr:last-child td{border-bottom:0}.amount{font-weight:800;white-space:nowrap}.pill{display:inline-block;border-radius:999px;padding:4px 8px;font-size:11px;background:#1e3b37;color:var(--accent2)}.pill.expense{background:#3c2929;color:#ffb4b4}.empty{text-align:center;color:var(--muted);padding:28px}.closing{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.closing .mini{padding:13px;background:#0d151e;border:1px solid var(--line);border-radius:12px}.mini span{display:block;color:var(--muted);font-size:11px}.mini strong{display:block;font-size:18px;margin-top:7px}.notice{border:1px solid #6a5428;background:#2a2418;color:#ffe0a0;border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.5;margin:16px 0}.footer{color:var(--muted);font-size:11px;line-height:1.5;margin-top:18px}.hidden{display:none!important}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:1fr}.closing{grid-template-columns:1fr 1fr}.wrap{padding:16px 12px 32px}.stat,.card{padding:14px}}
+@media(max-width:430px){.fieldgrid{grid-template-columns:1fr}.field.full{grid-column:auto}.closing{grid-template-columns:1fr}.brand h1{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><div class="logo">A</div><div><div class="eyebrow">Panel de administración</div><h1>AutoControl <span style="color:var(--accent)">Car Wash</span></h1></div></div>
+    <div class="datebox" id="todayLabel">Operación diaria</div>
+  </header>
+
+
+  <section class="card" id="authPanel" style="max-width:560px;margin:0 auto 18px">
+    <h2>Acceso seguro</h2>
+    <p class="sub">Inicia sesión para consultar los registros guardados en la nube.</p>
+    <form id="authForm">
+      <div class="fieldgrid">
+        <div class="field full"><label for="authEmail">Correo electrónico</label><input id="authEmail" type="email" autocomplete="username" placeholder="tu-correo@ejemplo.com" required></div>
+        <div class="field full"><label for="authPassword">Contraseña</label><input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></div>
+      </div>
+      <div class="actions">
+        <button class="primary" type="submit" id="signInBtn">Iniciar sesión</button>
+        <button class="secondary" type="button" id="signUpBtn">Crear cuenta nueva</button>
+      </div>
+    </form>
+    <p id="authMessage" class="sub" style="margin:12px 0 0;overflow-wrap:anywhere"></p>
+  </section>
+
+  <main id="appContent" class="hidden">
+  <div class="notice"><strong>Conectado a Supabase:</strong> las ventas, gastos y cierres se cargan desde la nube después de iniciar sesión. Usa esta versión primero con datos de prueba; aún no es un sistema contable ni emite comprobantes SUNAT.</div>
+
+  <section class="stats">
+    <div class="stat"><div class="label">Ventas del día</div><div class="value" id="salesTotal">S/ 0.00</div><div class="hint" id="salesCount">0 servicios registrados</div></div>
+    <div class="stat"><div class="label">Gastos del día</div><div class="value" id="expensesTotal">S/ 0.00</div><div class="hint" id="expenseCount">0 gastos registrados</div></div>
+    <div class="stat"><div class="label">Saldo operativo estimado</div><div class="value" id="netTotal">S/ 0.00</div><div class="hint">Ventas menos gastos registrados</div></div>
+    <div class="stat"><div class="label">Efectivo esperado</div><div class="value" id="cashExpected">S/ 0.00</div><div class="hint">Apertura + ventas en efectivo − gastos en efectivo</div></div>
+  </section>
+
+  <div class="grid">
+    <section class="card">
+      <h2>＋ Registrar una venta</h2>
+      <p class="sub">Registra cada servicio al terminarlo.</p>
+      <form id="saleForm">
+        <div class="fieldgrid">
+          <div class="field"><label for="saleDate">Fecha</label><input id="saleDate" type="date" required></div>
+          <div class="field"><label for="saleAmount">Importe (S/)</label><input id="saleAmount" type="number" min="0.01" step="0.01" placeholder="Ej. 25.00" required></div>
+          <div class="field"><label for="saleService">Servicio</label><select id="saleService" required><option value="">Seleccionar...</option>
+<option>Lavado básico</option>
+<option>Lavado premium</option>
+<option>Lavado de camioneta</option>
+<option>Aspirado</option>
+<option>Encerado</option>
+<option>Detailing interior</option>
+<option>Pulido</option>
+<option>Otro</option></select></div>
+          <div class="field"><label for="saleVehicle">Vehículo</label>
+            <select id="saleVehicle">
+              <option>Auto</option>
+              <option>Camioneta</option>
+              <option>SUV</option>
+              <option>Moto</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="field"><label for="salePayment">Método de pago</label><select id="salePayment" required><option value="Efectivo">Efectivo</option>
+<option value="Yape">Yape</option>
+<option value="Plin">Plin</option>
+<option value="Tarjeta">Tarjeta</option>
+<option value="Transferencia">Transferencia</option>
+<option value="Otro">Otro</option></select></div>
+          <div class="field"><label for="saleNote">Nota (opcional)</label><input id="saleNote" maxlength="100" placeholder="Ej. placa o detalle"></div>
+        </div>
+        <button class="primary fullbtn" type="submit">Guardar venta</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>− Registrar un gasto</h2>
+      <p class="sub">Anota compras y otros gastos operativos.</p>
+      <form id="expenseForm">
+        <div class="fieldgrid">
+          <div class="field"><label for="expenseDate">Fecha</label><input id="expenseDate" type="date" required></div>
+          <div class="field"><label for="expenseAmount">Importe (S/)</label><input id="expenseAmount" type="number" min="0.01" step="0.01" placeholder="Ej. 18.50" required></div>
+          <div class="field"><label for="expenseCategory">Categoría</label><select id="expenseCategory" required><option value="">Seleccionar...</option>
+<option>Productos de limpieza</option>
+<option>Paños y materiales</option>
+<option>Servicios básicos</option>
+<option>Mantenimiento</option>
+<option>Pago de personal</option>
+<option>Alquiler</option>
+<option>Otros</option></select></div>
+          <div class="field"><label for="expensePayment">Pagado con</label><select id="expensePayment" required><option value="Efectivo">Efectivo</option>
+<option value="Yape">Yape</option>
+<option value="Plin">Plin</option>
+<option value="Tarjeta">Tarjeta</option>
+<option value="Transferencia">Transferencia</option>
+<option value="Otro">Otro</option></select></div>
+          <div class="field full"><label for="expenseNote">Descripción</label><input id="expenseNote" maxlength="120" placeholder="Ej. compra de champú automotriz"></div>
+        </div>
+        <button class="primary fullbtn" type="submit">Guardar gasto</button>
+      </form>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Cierre de caja</h2>
+    <p class="sub">Configura el efectivo inicial y registra cuánto efectivo contaste al finalizar el día.</p>
+    <div class="fieldgrid">
+      <div class="field"><label for="openingCash">Efectivo inicial (S/)</label><input id="openingCash" type="number" min="0" step="0.01" value="0"></div>
+      <div class="field"><label for="countedCash">Efectivo contado al cierre (S/)</label><input id="countedCash" type="number" min="0" step="0.01" placeholder="Ingresa el conteo real"></div>
+    </div>
+    <div class="actions"><button class="secondary" id="saveClosing" type="button">Guardar datos del cierre</button><button class="secondary" id="exportCsv" type="button">Exportar registros CSV</button></div>
+    <div class="closing" style="margin-top:14px">
+      <div class="mini"><span>Ventas en efectivo</span><strong id="cashSales">S/ 0.00</strong></div>
+      <div class="mini"><span>Gastos en efectivo</span><strong id="cashExpenses">S/ 0.00</strong></div>
+      <div class="mini"><span>Diferencia de caja</span><strong id="cashDifference">Pendiente</strong></div>
+    </div>
+  </section>
+
+  <div class="tabs">
+    <button class="tab active" data-filter="all">Todos los movimientos</button>
+    <button class="tab" data-filter="sale">Ventas</button>
+    <button class="tab" data-filter="expense">Gastos</button>
+  </div>
+  <section class="card">
+    <div class="toolbar">
+      <div><h2 style="margin-bottom:4px">Movimientos registrados</h2><div class="sub" style="margin:0">Filtra por fecha y revisa lo registrado.</div></div>
+      <div class="left"><label for="historyDate">Fecha:</label><input id="historyDate" type="date"><button class="secondary" id="showAllDates" type="button">Ver todos</button></div>
+    </div>
+    <div class="tablewrap"><table><thead><tr><th>Tipo</th><th>Detalle</th><th>Pago</th><th>Fecha</th><th>Importe</th><th></th></tr></thead><tbody id="movementRows"></tbody></table></div>
+    <div id="emptyState" class="empty">Todavía no hay movimientos. Registra tu primera venta o gasto.</div>
+  </section>
+  <p class="footer">AutoControl Car Wash · Versión inicial conectada a Supabase. No procesa pagos, no emite comprobantes SUNAT y no reemplaza la contabilidad. Mantén copias de respaldo y prueba la seguridad antes de usar datos reales.</p>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+  // PASO DE CONFIGURACIÓN: sustituye SOLO estos dos valores por los de tu proyecto.
+  // Usa Project URL y la publishable key (o anon public key antigua).
+  // NUNCA pegues aquí una contraseña de base de datos, service_role o sb_secret_.
+const SUPABASE_URL = "https://uetssgsnihrdhrsfnrzb.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_T7DfjnCq2yFhKryGowkzyw_z_QL5QGp";  
+  const $ = id => document.getElementById(id);
+  const today = new Date();
+  const localDate = d => { const x = new Date(d.getTime() - d.getTimezoneOffset()*60000); return x.toISOString().slice(0,10); };
+  const todayStr = localDate(today);
+  const money = n => 'S/ ' + (Number(n)||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const safe = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const toDbPayment = value => ({
+    'Efectivo':'cash','Yape':'yape','Plin':'plin','Tarjeta':'card','Transferencia':'transfer','Otro':'other'
+  }[value] || 'other');
+  const fromDbPayment = value => ({
+    cash:'Efectivo',yape:'Yape',plin:'Plin',card:'Tarjeta',transfer:'Transferencia',other:'Otro'
+  }[value] || 'Otro');
+
+  $('saleDate').value = todayStr;
+  $('expenseDate').value = todayStr;
+  $('historyDate').value = todayStr;
+  $('todayLabel').textContent = today.toLocaleDateString('es-PE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  let client = null;
+  let currentUser = null;
+  let business = null;
+  let records = [];
+  let closings = {};
+  let activeFilter = 'all';
+  let selectedHistoryDate = todayStr;
+  let loading = false;
+
+  function setAuthMessage(message, isError=false) {
+    $('authMessage').textContent = message;
+    $('authMessage').style.color = isError ? 'var(--red)' : 'var(--muted)';
+  }
+  function setBusy(busy) {
+    loading = busy;
+    $('signInBtn').disabled = busy;
+    $('signUpBtn').disabled = busy;
+  }
+  function showLoggedOut(message='') {
+    currentUser = null; business = null; records = []; closings = {};
+    $('authPanel').classList.remove('hidden');
+    $('appContent').classList.add('hidden');
+    setBusy(false);
+    if (message) setAuthMessage(message);
+  }
+  function showLoggedIn() {
+    $('authPanel').classList.add('hidden');
+    $('appContent').classList.remove('hidden');
+  }
+  function paymentToDb(value) { return toDbPayment(value); }
+
+  async function loadBusinessAndData() {
+    if (!currentUser || loading) return;
+    loading = true;
+    try {
+      const {data: found, error: findError} = await client
+        .from('businesses').select('id, name').eq('owner_id', currentUser.id).maybeSingle();
+      if (findError) throw findError;
+      business = found;
+      if (!business) {
+        const {data: created, error: createError} = await client
+          .from('businesses')
+          .insert({owner_id: currentUser.id, name: 'Mi Car Wash'})
+          .select('id, name').single();
+        if (createError) throw createError;
+        business = created;
+      }
+
+      const [salesResult, expensesResult, closingResult] = await Promise.all([
+        client.from('sales').select('*').eq('business_id', business.id).order('created_at',{ascending:false}),
+        client.from('expenses').select('*').eq('business_id', business.id).order('created_at',{ascending:false}),
+        client.from('cash_closings').select('*').eq('business_id', business.id)
+      ]);
+      if (salesResult.error) throw salesResult.error;
+      if (expensesResult.error) throw expensesResult.error;
+      if (closingResult.error) {
+        if (closingResult.error.code === '42P01' || /cash_closings/i.test(closingResult.error.message || '')) {
+          throw new Error('Falta crear la tabla cash_closings. Ejecuta el segundo SQL que te proporcioné antes de usar los cierres de caja.');
+        }
+        throw closingResult.error;
+      }
+
+      const sales = (salesResult.data || []).map(r => ({
+        id:r.id, type:'sale', date:r.sale_date, amount:Number(r.amount),
+        detail:r.service + (r.vehicle ? ' · ' + r.vehicle : ''),
+        payment:fromDbPayment(r.payment_method), note:r.note || '',
+        createdAt:new Date(r.created_at).getTime(), db:r
+      }));
+      const expenses = (expensesResult.data || []).map(r => ({
+        id:r.id, type:'expense', date:r.expense_date, amount:Number(r.amount),
+        detail:r.category, payment:fromDbPayment(r.payment_method), note:r.note || '',
+        createdAt:new Date(r.created_at).getTime(), db:r
+      }));
+      records = [...sales, ...expenses].sort((a,b)=>b.createdAt-a.createdAt);
+      closings = {};
+      (closingResult.data || []).forEach(r => {
+        closings[r.closing_date] = {opening:Number(r.opening_cash || 0), counted:r.counted_cash===null?null:Number(r.counted_cash)};
+      });
+      showLoggedIn();
+      render();
+    } catch (err) {
+      console.error(err);
+      alert('No se pudieron cargar los datos. Revisa las tablas y las políticas RLS. Detalle: ' + (err.message || 'error desconocido'));
+      showLoggedIn();
+      render();
+    } finally {
+      loading = false;
+    }
+  }
+
+  function dayRecords(day){ return records.filter(r=>r.date===day); }
+  function render(){
+    const list=dayRecords(todayStr), sales=list.filter(r=>r.type==='sale'), expenses=list.filter(r=>r.type==='expense');
+    const totalSales=sales.reduce((a,r)=>a+r.amount,0), totalExpenses=expenses.reduce((a,r)=>a+r.amount,0);
+    const cashSales=sales.filter(r=>r.payment==='Efectivo').reduce((a,r)=>a+r.amount,0);
+    const cashExpenses=expenses.filter(r=>r.payment==='Efectivo').reduce((a,r)=>a+r.amount,0);
+    const closing=closings[todayStr]||{opening:0,counted:null};
+    const expected=Number(closing.opening||0)+cashSales-cashExpenses;
+    $('salesTotal').textContent=money(totalSales); $('expensesTotal').textContent=money(totalExpenses); $('netTotal').textContent=money(totalSales-totalExpenses);
+    $('salesCount').textContent=sales.length+' servicios registrados'; $('expenseCount').textContent=expenses.length+' gastos registrados'; $('cashExpected').textContent=money(expected);
+    $('cashSales').textContent=money(cashSales); $('cashExpenses').textContent=money(cashExpenses);
+    $('openingCash').value=Number(closing.opening||0);
+    $('countedCash').value=closing.counted===null||closing.counted===undefined?'':closing.counted;
+    const diff=closing.counted===null||closing.counted===undefined?null:Number(closing.counted)-expected;
+    $('cashDifference').textContent=diff===null?'Pendiente':(diff>0?'+':'')+money(diff);
+    $('cashDifference').style.color=diff===null?'var(--muted)':Math.abs(diff)<0.005?'var(--accent)':'var(--yellow)';
+    let visible=records.filter(r=>(selectedHistoryDate==='all'||r.date===selectedHistoryDate)&&(activeFilter==='all'||r.type===activeFilter));
+    visible.sort((a,b)=>b.createdAt-a.createdAt);
+    $('movementRows').innerHTML=visible.map(r=>`<tr><td><span class="pill ${r.type==='expense'?'expense':''}">${r.type==='sale'?'Venta':'Gasto'}</span></td><td><strong>${safe(r.detail)}</strong>${r.note?`<br><span style="color:var(--muted);font-size:11px">${safe(r.note)}</span>`:''}</td><td>${safe(r.payment)}</td><td>${safe(r.date)}</td><td class="amount">${money(r.amount)}</td><td><button class="danger" data-delete="${safe(r.id)}" type="button" aria-label="Eliminar movimiento">Eliminar</button></td></tr>`).join('');
+    $('emptyState').classList.toggle('hidden',visible.length>0);
+    if(visible.length===0)$('movementRows').innerHTML='';
+    document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.filter===activeFilter));
+  }
+
+  async function saveSale(e) {
+    e.preventDefault();
+    if (!client || !currentUser || !business) return alert('Inicia sesión primero.');
+    const amount=Number($('saleAmount').value);
+    if(!(amount>0)) return alert('Ingresa un importe mayor que cero.');
+    const payload = {
+      business_id:business.id, sale_date:$('saleDate').value, amount,
+      service:$('saleService').value, vehicle:$('saleVehicle').value || null,
+      payment_method:paymentToDb($('salePayment').value), note:$('saleNote').value.trim() || null
+    };
+    const {error} = await client.from('sales').insert(payload);
+    if(error) { console.error(error); return alert('No se pudo guardar la venta: '+error.message); }
+    $('saleAmount').value=''; $('saleNote').value='';
+    selectedHistoryDate=$('historyDate').value || todayStr;
+    await loadBusinessAndData();
+  }
+
+  async function saveExpense(e) {
+    e.preventDefault();
+    if (!client || !currentUser || !business) return alert('Inicia sesión primero.');
+    const amount=Number($('expenseAmount').value);
+    if(!(amount>0)) return alert('Ingresa un importe mayor que cero.');
+    const payload = {
+      business_id:business.id, expense_date:$('expenseDate').value, amount,
+      category:$('expenseCategory').value,
+      payment_method:paymentToDb($('expensePayment').value), note:$('expenseNote').value.trim() || null
+    };
+    const {error} = await client.from('expenses').insert(payload);
+    if(error) { console.error(error); return alert('No se pudo guardar el gasto: '+error.message); }
+    $('expenseAmount').value=''; $('expenseNote').value='';
+    selectedHistoryDate=$('historyDate').value || todayStr;
+    await loadBusinessAndData();
+  }
+
+  async function saveClosing() {
+    if (!client || !currentUser || !business) return alert('Inicia sesión primero.');
+    const opening=Number($('openingCash').value||0), counted=$('countedCash').value===''?null:Number($('countedCash').value);
+    if(opening<0||(counted!==null&&counted<0)) return alert('Los importes no pueden ser negativos.');
+    const payload = {business_id:business.id, closing_date:todayStr, opening_cash:opening, counted_cash:counted, updated_at:new Date().toISOString()};
+    const {error} = await client.from('cash_closings').upsert(payload,{onConflict:'business_id,closing_date'});
+    if(error) { console.error(error); return alert('No se pudo guardar el cierre: '+error.message); }
+    await loadBusinessAndData();
+    alert('Cierre guardado en Supabase.');
+  }
+
+  async function deleteMovement(id) {
+    const record=records.find(r=>r.id===id);
+    if(!record) return;
+    if(!confirm('¿Eliminar este movimiento de la nube? Esta acción no se puede deshacer.')) return;
+    const table=record.type==='sale'?'sales':'expenses';
+    const {error}=await client.from(table).delete().eq('id',id).eq('business_id',business.id);
+    if(error) { console.error(error); return alert('No se pudo eliminar: '+error.message); }
+    await loadBusinessAndData();
+  }
+
+  $('authForm').addEventListener('submit', async e=>{
+    e.preventDefault();
+    if (!client) return setAuthMessage('Falta configurar la URL y la publishable key de Supabase.',true);
+    setBusy(true); setAuthMessage('Iniciando sesión…');
+    try {
+      const {data,error}=await client.auth.signInWithPassword({email:$('authEmail').value.trim(),password:$('authPassword').value});
+      if(error) throw error;
+      currentUser=data.user;
+      setAuthMessage('Sesión iniciada.');
+      await loadBusinessAndData();
+    } catch(err) {
+      setAuthMessage('No se pudo iniciar sesión: '+err.message,true);
+    } finally { setBusy(false); }
+  });
+
+  $('signUpBtn').addEventListener('click', async ()=>{
+    if (!client) return setAuthMessage('Falta configurar la URL y la publishable key de Supabase.',true);
+    const email=$('authEmail').value.trim(), password=$('authPassword').value;
+    if(!email || password.length<6) return setAuthMessage('Escribe un correo válido y una contraseña de al menos 6 caracteres.',true);
+    setBusy(true); setAuthMessage('Creando cuenta…');
+    try {
+      const {data,error}=await client.auth.signUp({email,password});
+      if(error) throw error;
+      if(data.session) {
+        currentUser=data.user;
+        await loadBusinessAndData();
+      } else {
+        setAuthMessage('Cuenta creada. Revisa tu correo para confirmar la cuenta y luego inicia sesión.');
+      }
+    } catch(err) {
+      setAuthMessage('No se pudo crear la cuenta: '+err.message,true);
+    } finally { setBusy(false); }
+  });
+
+  $('signOutBtn')?.addEventListener('click', async ()=>{
+    await client.auth.signOut();
+    showLoggedOut('Sesión cerrada.');
+  });
+
+  $('saleForm').addEventListener('submit',saveSale);
+  $('expenseForm').addEventListener('submit',saveExpense);
+  $('saveClosing').addEventListener('click',saveClosing);
+  $('historyDate').addEventListener('change',()=>{selectedHistoryDate=$('historyDate').value||todayStr;render();});
+  $('showAllDates').addEventListener('click',()=>{selectedHistoryDate='all';$('historyDate').value='';render();});
+  document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{activeFilter=b.dataset.filter;render();}));
+  $('movementRows').addEventListener('click',e=>{
+    const btn=e.target.closest('[data-delete]');
+    if(btn) deleteMovement(btn.dataset.delete);
+  });
+  $('exportCsv').addEventListener('click',()=>{
+    const rows=[['tipo','fecha','detalle','metodo_pago','importe_soles','nota'],...records.map(r=>[r.type,r.date,r.detail,r.payment,r.amount.toFixed(2),r.note||''])];
+    const csv=rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+    const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='autocontrol-registros.csv';a.click();URL.revokeObjectURL(url);
+  });
+
+  // Logout control and status.
+  const header = document.querySelector('.top');
+  const logout = document.createElement('button');
+  logout.type='button'; logout.id='signOutBtn'; logout.className='secondary hidden'; logout.textContent='Cerrar sesión';
+  header.appendChild(logout);
+  logout.addEventListener('click', async ()=>{
+    if (client) await client.auth.signOut();
+    showLoggedOut('Sesión cerrada.');
+  });
+
+  if (!window.supabase || !window.supabase.createClient) {
+    showLoggedOut('No se pudo cargar la biblioteca de Supabase. Comprueba tu conexión a internet.');
+    return;
+  }
+
+if (
+  !SUPABASE_URL.startsWith('https://') ||
+  SUPABASE_URL.includes('PEGA_AQUI') ||
+  SUPABASE_PUBLISHABLE_KEY.includes('PEGA_AQUI') ||
+  !SUPABASE_PUBLISHABLE_KEY
+) {
+  showLoggedOut('Revisa tu Project URL y tu publishable key de Supabase.');
+  return;
+}
+
+  try {
+    client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  } catch(err) {
+    showLoggedOut('No se pudo configurar Supabase: '+err.message);
+    return;
+  }
+
+  client.auth.onAuthStateChange((event, session)=>{
+    if(session?.user) {
+      currentUser=session.user;
+      logout.classList.remove('hidden');
+      // Timeout prevents doing DB work inside the auth event callback.
+      setTimeout(()=>loadBusinessAndData(),0);
+    } else {
+      logout.classList.add('hidden');
+      showLoggedOut();
+    }
+  });
+
+  client.auth.getSession().then(({data,error})=>{
+    if(error) return setAuthMessage('No se pudo recuperar la sesión: '+error.message,true);
+    if(data.session?.user) {
+      currentUser=data.session.user;
+      logout.classList.remove('hidden');
+      loadBusinessAndData();
+    } else showLoggedOut('Ingresa con el usuario que creaste en Supabase Authentication.');
+  });
+})();
+</script>
+</body>
+</html>
